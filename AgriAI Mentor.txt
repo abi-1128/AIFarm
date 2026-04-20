@@ -1,0 +1,35 @@
+AgriAI Mentor: Full-Stack Farming Application
+AgriAI Mentor is a premium web platform designed to empower landowners with advanced AI-driven tools for smarter agriculture management, crop optimization, and direct-to-consumer commerce.
+
+🚀 Getting Started
+Backend (Django)
+Navigate to backend: cd backend
+Setup Venv: python -m venv venv
+Install Deps: .\venv\Scripts\pip install -r requirements.txt (or manually install django, djangorestframework, django-cors-headers, dj-database-url, python-dotenv, requests, openai)
+Start Server: .\venv\Scripts\python manage.py runserver
+Frontend (React)
+Navigate to frontend: cd frontend
+Install Deps: npm install
+Run Dev: npm run dev
+🛠️ Architecture Overview
+Backend Apps
+users: Role-based auth (Landowner, Buyer, Admin).
+land: Land profiles & soil analysis.
+crops: Recommendation engine & task guidance.
+ai_mentor: AI Chatbot integration.
+marketplace: Produce listings and order management.
+weather: Real-time alerts and risk prediction.
+✨ Premium Features
+1. AI Crop Recommendation
+Soil Matching: Suggests crops based on soil, season, and location.
+Task Module: Step-by-step instructions from sowing to harvest.
+2. Marketplace 🛒
+Farmer-to-Buyer: Direct selling with AI-suggested pricing.
+Global Reach: Connect with buyers across regions.
+3. AI Chatbot Mentor 🤖
+Queries: Ask about pests, irrigation, or fertilizer usage.
+24/7 Support: Intelligent responses for instant help.
+🔑 Default Credentials (Seeded)
+Admin: admin / admin123
+Farmer: farmer_joe / farmer123
+Buyer: city_buyer / buyer123

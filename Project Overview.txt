@@ -1,0 +1,43 @@
+Project Overview
+The application is structured as a modular full-stack platform:
+
+Backend: Django with Django REST Framework (DRF), PostgreSQL configuration (fallback to SQLite for local development), and Token Authentication.
+Frontend: React (Vite) with Tailwind CSS, Framer Motion for premium animations, and Lucide for iconography.
+AI Integration: Custom logic for crop recommendations, cultivation roadmaps, and a dedicated AI Chatbot Mentor for farmer queries.
+🛠️ Core Feature Implementation
+Authentication System:
+
+Secure Login and Registration with role-based access (LANDOWNER, BUYER, ADMIN).
+Integrated token persistence using AuthContext.
+Land & Soil Profiling:
+
+Landowners can input location, size, and soil type.
+Integrated mapping of lands to specific crop recommendations.
+AI Crop Recommendation & Mentor:
+
+Engine: Suggests the most suitable crops based on land metadata and seasonal data.
+Guidance: Automatically generates step-by-step cultivation tasks (e.g., Land Preparation, Sowing, Irrigation).
+AI Chatbot: A 24/7 intelligent assistant for farming queries (pests, fertilizers, pricing).
+Weather & Analytics:
+
+Real-time weather integration with cultivation alerts.
+Metric-driven dashboard cards for land area, current revenue projections, and active tasks.
+Marketplace Interface:
+
+Direct Selling: Farmers can list their produce at suggested prices.
+Order Management: Buyers can browse, purchase, and track orders directly from the platform.
+🔑 Default Credentials (Seeded Data)
+I have pre-populated the database with sample data for immediate exploration:
+
+Admin: admin / admin123
+Farmer: farmer_joe / farmer123
+Buyer: city_buyer / buyer123
+🔧 Execution Instructions
+Detailed steps for running the backend and frontend are provided in the 
+project_walkthrough.md
+ artifact.
+
+I've also generated a seed script (
+
+backend/seed_db.py
+) which has been executed to ensure you have crops, lands, and products ready to view on your first login!

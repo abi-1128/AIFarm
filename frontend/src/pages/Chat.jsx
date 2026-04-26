@@ -1,21 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { aiMentorService } from '../services/api';
+import DashboardHeader from '../components/DashboardHeader';
 import { useAuth } from '../context/AuthContext';
 import { 
   Send, 
-  Bot, 
-  User, 
   Sparkles, 
   Paperclip, 
   Mic, 
   Trash2, 
-  Phone,
   MessageSquare,
-  Cpu,
-  BrainCircuit,
-  Zap
+  User,
+  Bot,
+  Zap,
+  MoreVertical,
+  Plus
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const Chat = () => {
   const { user } = useAuth();
@@ -41,7 +40,7 @@ const Chat = () => {
       ]).reverse();
       setMessages(history);
     } catch (err) {
-      console.error(err);
+      console.error("Chat history fetch failed", err);
     }
   };
 
@@ -59,137 +58,155 @@ const Chat = () => {
       const botMsg = { id: Date.now() + 1, text: res.data.ai_response, sender: 'bot', time: new Date() };
       setMessages(prev => [...prev, botMsg]);
     } catch (err) {
-      console.error(err);
+      console.error("AI Response failed", err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="h-[calc(100vh-180px)] xl:h-[calc(100vh-220px)] flex flex-col glass rounded-[4rem] border border-white/5 overflow-hidden relative shadow-2xl">
-      {/* Premium Header */}
+    <>
+      <DashboardHeader title="AI Mentor" user={user} />
 
-      {/* Premium Header */}
-      <div className="bg-white/5 backdrop-blur-3xl border-b border-white/5 p-8 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center space-x-6">
-          <div className="relative">
-            <div className="w-16 h-16 bg-emerald-500 rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-emerald-500/20">
-              <BrainCircuit size={32} />
-            </div>
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full border-4 border-[#0d1117] flex items-center justify-center">
-              <Zap size={8} className="text-white fill-white" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-black text-white leading-tight flex items-center tracking-tighter">
-              NEURAL MENTOR <Sparkles size={18} className="ml-3 text-amber-500" />
-            </h3>
-            <span className="flex items-center text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-1">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full mr-3 animate-pulse shadow-[0_0_10px_#10b981]" />
-              SYST: OPTIMAL • 12ms LATENCY
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center space-x-4">
-           <button className="p-4 bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white rounded-2xl transition-all border border-white/5"><Phone size={20} /></button>
-           <button className="p-4 bg-red-500/5 text-red-500/40 hover:bg-red-500/20 hover:text-red-500 rounded-2xl transition-all border border-red-500/5"><Trash2 size={20} /></button>
-        </div>
-      </div>
-
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
-        {messages.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-center space-y-10 max-w-sm mx-auto opacity-80">
-            <div className="w-24 h-24 bg-white/5 rounded-[2.5rem] flex items-center justify-center text-gray-700 border border-white/5">
-               <MessageSquare size={48} strokeWidth={1} />
-            </div>
-            <div className="space-y-4">
-              <p className="font-black text-3xl text-white tracking-tighter uppercase">Initiate Neural Link</p>
-              <p className="text-sm font-bold text-gray-500 leading-relaxed uppercase tracking-widest">Ask about soil health, pest control, or optimized NPK ratios.</p>
-            </div>
-            <div className="grid grid-cols-1 gap-4 w-full pt-4">
-              {['Soil restoration techniques?', 'Best season for Wheat B?', 'AI pricing projections?'].map((q, i) => (
-                <button key={i} onClick={() => { setInput(q); }} className="bg-white/5 hover:bg-emerald-500/10 text-gray-500 hover:text-emerald-400 p-5 rounded-3xl text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all outline-none">
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-200px)]">
         
-        {messages.map((msg, i) => (
-          <motion.div 
-            initial={{ opacity: 0, x: msg.sender === 'user' ? 20 : -20, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            key={msg.id}
-            className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div className={`flex items-start space-x-6 max-w-[85%] sm:max-w-[70%] ${msg.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-2xl transition-transform hover:scale-110 ${
-                msg.sender === 'user' ? 'bg-blue-600 text-white' : 'glass-emerald text-emerald-400 border border-emerald-500/20'
-              }`}>
-                {msg.sender === 'user' ? <User size={18} /> : <Cpu size={18} />}
+        {/* Chat List/History Sidebar */}
+        <div className="hidden lg:block lg:col-span-3 space-y-6">
+          <div className="glass-card p-6 h-full flex flex-col">
+            <button className="btn-primary w-full py-3 mb-6 justify-center gap-2">
+              <Plus size={18} /> New Conversation
+            </button>
+            <div className="flex-1 overflow-y-auto space-y-2">
+              <p className="text-[10px] font-bold text-[#52796F] uppercase tracking-widest px-2 mb-4">Recent Discussions</p>
+              <ChatItem active={true} title="Soil Nutrition Plan" date="Today" />
+              <ChatItem title="Wheat Pest Control" date="Yesterday" />
+              <ChatItem title="Market Price Analysis" date="24 Apr" />
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Window */}
+        <div className="lg:col-span-9 flex flex-col h-full glass-card overflow-hidden bg-white">
+          
+          {/* Chat Header */}
+          <div className="p-6 border-b border-[#D8F3DC] flex justify-between items-center bg-[#F8FAF9]">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-[#2D6A4F] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[#2D6A4F22]">
+                <Sparkles size={24} />
               </div>
-              <div className={`p-8 rounded-[3rem] shadow-2xl text-base font-medium leading-relaxed relative ${
-                msg.sender === 'user' 
-                  ? 'bg-blue-600 text-white rounded-tr-none shadow-blue-500/10 border border-white/10' 
-                  : 'glass text-gray-300 rounded-tl-none border border-white/10'
-              }`}>
-                {msg.text}
-                <div className={`mt-4 text-[9px] font-black uppercase tracking-widest opacity-40 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
-                  {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • SYNCED
+              <div>
+                <h4 className="font-bold text-[#1B4332]">Neural Mentor AI</h4>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-[10px] font-bold text-[#2D6A4F] uppercase tracking-widest">Active & Learning</span>
                 </div>
               </div>
             </div>
-          </motion.div>
-        ))}
-        {loading && (
-          <div className="flex justify-start">
-             <div className="glass p-6 rounded-[2.5rem] rounded-tl-none border border-white/5 flex items-center space-x-3">
-                <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce shadow-[0_0_10px_#10b981]" />
-                <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.2s] shadow-[0_0_10px_#10b981]" />
-                <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:0.4s] shadow-[0_0_10px_#10b981]" />
-             </div>
+            <div className="flex gap-2">
+              <button className="p-2 hover:bg-white rounded-lg text-[#52796F] transition-all"><Trash2 size={20} /></button>
+              <button className="p-2 hover:bg-white rounded-lg text-[#52796F] transition-all"><MoreVertical size={20} /></button>
+            </div>
           </div>
-        )}
-        <div ref={scrollRef} className="h-4" />
-      </div>
 
-      {/* Input Area */}
-      <div className="p-8 bg-black/20 border-t border-white/5">
-        <form onSubmit={handleSend} className="relative group max-w-5xl mx-auto">
-          <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center space-x-3">
-            <button type="button" className="p-3 text-gray-600 hover:text-emerald-500 hover:bg-white/5 rounded-2xl transition-all">
-              <Paperclip size={22} />
-            </button>
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-8 space-y-8">
+            {messages.length === 0 && (
+              <div className="h-full flex flex-col items-center justify-center text-center max-w-sm mx-auto space-y-6">
+                <div className="w-20 h-20 bg-[#F8FAF9] rounded-full flex items-center justify-center text-[#D8F3DC]">
+                  <MessageSquare size={48} />
+                </div>
+                <h3 className="text-2xl font-bold text-[#1B4332]">How can I help you today?</h3>
+                <p className="text-sm text-[#52796F]">Ask me anything about your crops, soil, or the marketplace.</p>
+                <div className="grid grid-cols-1 gap-3 w-full">
+                  {["Best fertilizer for Rice?", "Weather forecast for next week", "How to increase yield?"].map((q, i) => (
+                    <button key={i} onClick={() => setInput(q)} className="text-left px-6 py-3 bg-[#F8FAF9] border border-[#D8F3DC] rounded-xl text-xs font-bold text-[#2D6A4F] hover:bg-[#D8F3DC] transition-all">
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {messages.map((msg, i) => (
+              <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`flex gap-4 max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
+                    msg.sender === 'user' ? 'bg-[#3A86FF] text-white' : 'bg-[#D8F3DC] text-[#2D6A4F]'
+                  }`}>
+                    {msg.sender === 'user' ? <User size={20} /> : <Bot size={20} />}
+                  </div>
+                  <div className={`p-5 rounded-[24px] text-sm leading-relaxed shadow-sm ${
+                    msg.sender === 'user' 
+                    ? 'bg-[#3A86FF] text-white rounded-tr-none' 
+                    : 'bg-[#F8FAF9] text-[#1B4332] border border-[#D8F3DC] rounded-tl-none'
+                  }`}>
+                    {msg.text}
+                    <p className={`text-[9px] mt-3 font-bold uppercase opacity-50 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
+                      {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="flex gap-4 max-w-[80%]">
+                  <div className="w-10 h-10 bg-[#D8F3DC] rounded-xl flex items-center justify-center text-[#2D6A4F]">
+                    <Bot size={20} />
+                  </div>
+                  <div className="bg-[#F8FAF9] p-5 rounded-[24px] rounded-tl-none border border-[#D8F3DC] flex gap-2">
+                    <div className="w-2 h-2 bg-[#2D6A4F] rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-[#2D6A4F] rounded-full animate-bounce delay-100"></div>
+                    <div className="w-2 h-2 bg-[#2D6A4F] rounded-full animate-bounce delay-200"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={scrollRef} />
           </div>
-          <input 
-            type="text"
-            className="w-full bg-white/5 border border-white/5 group-focus-within:border-emerald-500/30 group-focus-within:bg-white/10 text-white py-7 pl-20 pr-40 rounded-[2.5rem] outline-none transition-all placeholder:text-gray-600 font-bold text-lg tracking-tight"
-            placeholder="Type your query for neural analysis..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-          />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-4">
-             <button type="button" className="hidden sm:flex p-3 text-gray-600 hover:text-blue-500 hover:bg-white/5 rounded-2xl transition-all">
-               <Mic size={22} />
-             </button>
-             <button 
-              type="submit"
-              disabled={loading || !input.trim()}
-              className="bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/5 disabled:text-gray-800 text-white px-10 py-4 rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-emerald-500/20 transition-all active:scale-95 flex items-center space-x-3"
-             >
-               <span className="hidden sm:inline">SEND DATA</span>
-               <Send size={18} />
-             </button>
+
+          {/* Input Area */}
+          <div className="p-6 bg-[#F8FAF9] border-t border-[#D8F3DC]">
+            <form onSubmit={handleSend} className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <button type="button" className="p-2 text-[#52796F] hover:bg-white rounded-lg transition-all"><Paperclip size={20} /></button>
+              </div>
+              <input 
+                type="text"
+                placeholder="Ask your mentor..."
+                className="w-full pl-14 pr-32 py-4 bg-white border border-[#D8F3DC] rounded-2xl focus:border-[#2D6A4F] outline-none font-medium shadow-inner"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <button type="button" className="p-2 text-[#52796F] hover:bg-white rounded-lg transition-all"><Mic size={20} /></button>
+                <button 
+                  type="submit"
+                  disabled={!input.trim() || loading}
+                  className="bg-[#2D6A4F] text-white p-3 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  <Send size={20} />
+                </button>
+              </div>
+            </form>
+            <p className="text-[9px] font-bold text-[#52796F] uppercase text-center mt-4 tracking-widest flex items-center justify-center gap-2">
+              <Zap size={10} className="text-amber-500 fill-amber-500" /> Powered by AIFarm Neural Engine
+            </p>
           </div>
-        </form>
-        <p className="mt-6 text-center text-[10px] font-black text-gray-700 uppercase tracking-[0.4em]">
-           SECURE NEURAL LINK • END-TO-END QUANTUM ENCRYPTION
-        </p>
+        </div>
+
       </div>
-    </div>
+    </>
   );
 };
+
+const ChatItem = ({ title, date, active }) => (
+  <button className={`w-full p-4 rounded-2xl text-left transition-all ${
+    active ? 'bg-[#D8F3DC] border-[#2D6A4F] border' : 'hover:bg-[#F8FAF9] border border-transparent'
+  }`}>
+    <h5 className="text-xs font-bold text-[#1B4332] truncate">{title}</h5>
+    <p className="text-[10px] text-[#52796F]">{date}</p>
+  </button>
+);
 
 export default Chat;

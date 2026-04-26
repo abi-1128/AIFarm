@@ -1,110 +1,42 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { landService, cropService, weatherService, marketplaceService } from '../services/api';
+import { landService, cropService, weatherService } from '../services/api';
+import Sidebar from '../components/Sidebar';
+import DashboardHeader from '../components/DashboardHeader';
 import { 
-  Plus, 
-  MapPin, 
-  Layers, 
-  Wheat, 
+  Sprout, 
+  CloudSun, 
+  Droplets, 
   TrendingUp, 
   AlertTriangle,
-  ChevronRight,
-  Droplets, 
-  Calendar, 
-  Settings,
-  CloudSun,
-  User,
-  ShoppingBag,
-  BarChart3,
-  MessageSquare,
+  ArrowRight,
+  Plus,
   Thermometer,
   Wind,
-  Droplet,
-  Sun,
-  BrainCircuit,
-  PieChart,
-  DollarSign
+  Layers,
+  MapPin,
+  Calendar as CalendarIcon
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Recommendation from './Recommendation';
-import Chat from './Chat';
-import Marketplace from './Marketplace';
-import GrowthProtocol from './GrowthProtocol';
-import Financials from './Financials';
-import Analytics from './Analytics';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1 }
-};
-
-const StatCard = ({ icon: Icon, label, value, unit, color, trend }) => (
-  <motion.div 
-    variants={itemVariants}
-    whileHover={{ y: -5, scale: 1.02 }}
-    className="glass p-6 rounded-[2.5rem] flex items-center space-x-5 border border-white/5 relative overflow-hidden group"
-  >
-    <div className="absolute top-0 right-0 w-24 h-24 bg-white/2 blur-[40px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-emerald-500/10 transition-colors" />
-    <div className={`w-14 h-14 rounded-2xl ${color} bg-opacity-10 flex items-center justify-center text-white shadow-inner border border-white/5`}>
-      <Icon size={24} />
-    </div>
-    <div className="flex-1">
-      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1.5">{label}</p>
-      <div className="flex items-baseline space-x-1.5">
-        <h4 className="text-3xl font-black text-white tracking-tighter">{value}</h4>
-        <span className="text-[11px] font-bold text-gray-600 uppercase tracking-tight">{unit}</span>
-      </div>
-      {trend && (
-        <p className={`text-[9px] font-black mt-1.5 uppercase tracking-widest ${trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>
-          {trend} <span className="text-gray-600 uppercase tracking-tighter ml-1">v. last cycle</span>
-        </p>
-      )}
-    </div>
-  </motion.div>
-);
 
 const LandownerDashboard = () => {
   const { user } = useAuth();
-  const [activeModule, setActiveModule] = useState('overview');
+  const navigate = useNavigate();
   const [lands, setLands] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalAires: 0,
-    activeCrops: 0,
-    projectedProfit: '₹4.2L',
-    pendingTasks: 8
-  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [landsRes, recsRes, weatherRes] = await Promise.all([
+        const [landsRes, weatherRes] = await Promise.all([
           landService.getLands(),
-          cropService.getRecommendations(),
-          weatherService.getWeather(28.6139, 77.2090)
+          weatherService.getWeather(28.61, 77.20) // Default coords
         ]);
         setLands(landsRes.data);
-        setRecommendations(recsRes.data);
         setWeather(weatherRes.data);
-        
-        const totalSize = landsRes.data.reduce((acc, l) => acc + l.size, 0);
-        setStats(prev => ({
-          ...prev,
-          totalAires: totalSize,
-          activeCrops: recsRes.data.length
-        }));
       } catch (err) {
-        console.error("Telemetry Extraction Failure", err);
+        console.error("Dashboard data fetch failed", err);
       } finally {
         setLoading(false);
       }
@@ -112,303 +44,263 @@ const LandownerDashboard = () => {
     fetchData();
   }, []);
 
-  const menuItems = [
-    { id: 'overview', label: 'Command Hub', icon: Layers },
-    { id: 'land', label: 'Land Matrix', icon: MapPin },
-    { id: 'recommendation', label: 'AI Synthesis', icon: BrainCircuit },
-    { id: 'guidance', label: 'Growth Protocol', icon: Wheat },
-    { id: 'chat', label: 'AI Mentor', icon: MessageSquare },
-    { id: 'marketplace', label: 'Global Trade', icon: ShoppingBag },
-    { id: 'financials', label: 'Cap Matrix', icon: DollarSign },
-    { id: 'analytics', label: 'Neural Insights', icon: BarChart3 }
-  ];
-
-  if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#05080a] space-y-6">
-      <div className="relative">
-        <div className="w-20 h-20 border-4 border-emerald-500/10 border-t-emerald-500 rounded-full animate-spin shadow-[0_0_50px_rgba(16,185,129,0.2)]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-emerald-500/20 rounded-full blur-xl animate-pulse" />
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAF9]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2D6A4F]"></div>
       </div>
-      <p className="text-[11px] font-black text-emerald-500/50 uppercase tracking-[0.8em] animate-pulse">Syncing Neural Link...</p>
-    </div>
-  );
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#05080a] text-white flex flex-col lg:flex-row overflow-hidden">
-      {/* Cinematic Sidebar */}
-      <aside className="w-full lg:w-80 bg-[#080d11]/80 backdrop-blur-2xl border-r border-white/5 p-8 flex flex-col space-y-12 z-50">
-        <div className="space-y-2">
-           <div className="flex items-center space-x-4 mb-4">
-             <div className="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
-                <BrainCircuit className="text-white" size={24} />
-             </div>
-             <h1 className="text-2xl font-black tracking-tighter uppercase leading-none">Agri<span className="text-emerald-500">AI</span> Mentor</h1>
-           </div>
-           <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest border-t border-white/5 pt-4">Landowner Interface V.2.0</p>
+    <>
+      <DashboardHeader title="Farm Overview" user={user} />
+
+
+        {/* Welcome & Stats */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
+          <StatCard 
+            title="Total Land" 
+            value={lands.reduce((acc, l) => acc + l.size, 0) + " Acres"} 
+            icon={<Layers className="text-[#2D6A4F]" />}
+            color="bg-[#D8F3DC]"
+          />
+          <StatCard 
+            title="Active Crops" 
+            value="3 Species" 
+            icon={<Sprout className="text-[#40916C]" />}
+            color="bg-[#B7E4C7]"
+          />
+          <StatCard 
+            title="Est. Revenue" 
+            value="₹4.2L" 
+            icon={<TrendingUp className="text-[#2D6A4F]" />}
+            color="bg-[#D8F3DC]"
+          />
+          <StatCard 
+            title="Weather" 
+            value={weather?.temp + "°C" || "28°C"} 
+            icon={<CloudSun className="text-[#3A86FF]" />}
+            color="bg-[#E9F5F8]"
+          />
         </div>
 
-        <nav className="flex-1 space-y-2 overflow-y-auto pr-4 custom-scrollbar">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveModule(item.id)}
-              className={`w-full flex items-center space-x-4 px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all duration-300 group relative ${
-                activeModule === item.id 
-                  ? 'bg-emerald-500 text-white shadow-[0_8px_30px_rgba(16,185,129,0.2)]' 
-                  : 'text-gray-500 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              {activeModule === item.id && (
-                <motion.div layoutId="activeTab" className="absolute inset-0 bg-emerald-500 rounded-2xl -z-10 shadow-3xl shadow-emerald-500/20" />
-              )}
-              <item.icon size={18} className={`${activeModule === item.id ? 'text-white' : 'text-gray-600 group-hover:text-emerald-400'}`} />
-              <span>{item.label}</span>
-              {activeModule === item.id && <ChevronRight size={14} className="ml-auto opacity-50" />}
-            </button>
-          ))}
-        </nav>
-
-        <div className="glass p-6 rounded-[2rem] border border-white/5 flex items-center space-x-4">
-          <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-inner">
-            <User size={20} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-black text-white truncate uppercase tracking-tighter">{user?.username}</p>
-            <p className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">Master Farmer</p>
-          </div>
-          <button className="text-rose-500 hover:scale-110 transition-transform"><Settings size={16} /></button>
-        </div>
-      </aside>
-
-      {/* Main Content Arena */}
-      <main className="flex-1 h-screen overflow-y-auto p-6 lg:p-12 space-y-12 custom-scrollbar relative">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        
-        <AnimatePresence mode="wait">
-          {activeModule === 'overview' && (
-            <motion.div
-              key="overview"
-              initial="hidden"
-              animate="visible"
-              exit={{ opacity: 0, x: -20 }}
-              variants={containerVariants}
-              className="space-y-12"
-            >
-              {/* Header Command */}
-              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-                <div className="space-y-4">
-                  <h2 className="text-6xl font-black tracking-tighter uppercase leading-none">Operational <br/><span className="text-emerald-500">Summary</span></h2>
-                  <p className="text-gray-500 text-xl font-bold tracking-tight max-w-xl">Intelligent monitoring active. Systems synchronized across {lands.length} active quadrants.</p>
-                </div>
-                <div className="flex items-center gap-4">
-                   <div className="glass px-6 py-4 rounded-2xl border border-white/5 flex items-center space-x-4">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">System Nominal</span>
-                   </div>
-                   <button className="bg-white text-black px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl hover:scale-105 transition-all">Export Protocol</button>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Column */}
+          <div className="lg:col-span-8 space-y-8">
+            
+            {/* Recommended Crops Section */}
+            <div className="glass-card p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold">Recommended for You</h3>
+                <button 
+                  onClick={() => navigate('/farmer/recommendation')}
+                  className="text-[#2D6A4F] font-semibold flex items-center gap-1 hover:underline"
+                >
+                  View All <ArrowRight size={16} />
+                </button>
               </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-                <StatCard icon={Layers} label="Operational Area" value={stats.totalAires} unit="Acres" color="bg-blue-600" trend="+4.2%" />
-                <StatCard icon={Wheat} label="Active Cultivations" value={stats.activeCrops} unit="Species" color="bg-emerald-600" trend="Optimal" />
-                <StatCard icon={TrendingUp} label="Projected Revenue" value={stats.projectedProfit} unit="Net" color="bg-amber-600" trend="+12.4%" />
-                <StatCard icon={Calendar} label="Priority Tasks" value={stats.pendingTasks} unit="Actions" color="bg-purple-600" trend="8 Unread" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <CropRecommendationCard 
+                  name="Basmati Rice" 
+                  suitability="98%" 
+                  profit="High" 
+                  image="/farming_3d_icons_set_1777140649782.png" // Using the icon set for demo
+                />
+                <CropRecommendationCard 
+                  name="Organic Wheat" 
+                  suitability="85%" 
+                  profit="Medium" 
+                  image="/farming_3d_icons_set_1777140649782.png"
+                />
+                <CropRecommendationCard 
+                  name="Mustard" 
+                  suitability="72%" 
+                  profit="Medium" 
+                  image="/farming_3d_icons_set_1777140649782.png"
+                />
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-                {/* Weather Station */}
-                <div className="xl:col-span-4 space-y-6">
-                   <h3 className="text-xl font-black uppercase tracking-tighter flex items-center"><CloudSun size={20} className="mr-3 text-emerald-500" /> Climate Terminal</h3>
-                   <div className="glass h-[400px] rounded-[3rem] p-10 flex flex-col justify-between border border-white/5 relative overflow-hidden group">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-transparent opacity-50" />
-                      
-                      <div className="space-y-8 relative z-10">
-                        <div className="flex justify-between items-start">
-                           <div>
-                              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Current Condition</p>
-                              <h4 className="text-4xl font-black uppercase tracking-tighter">{weather?.condition || 'Clear Sky'}</h4>
-                           </div>
-                           <Sun size={48} className="text-amber-400 drop-shadow-[0_0_20px_#fbbf2455]" />
-                        </div>
-
-                        <div className="flex items-center space-x-6">
-                           <div className="text-7xl font-black tracking-tighter text-white">{weather?.temp || 32}°</div>
-                           <div className="space-y-1 py-1 px-4 bg-emerald-500 text-black rounded-xl border border-white/20">
-                              <p className="text-[8px] font-black uppercase tracking-widest">Feels Like</p>
-                              <p className="text-lg font-black leading-none">{weather?.temp + 2 || 34}°</p>
-                           </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4 pt-8 border-t border-white/5">
-                           <div className="text-center space-y-2">
-                              <Droplet size={18} className="mx-auto text-blue-400" />
-                              <p className="text-[8px] font-black text-gray-500 uppercase">Humidity</p>
-                              <p className="text-xs font-black">42%</p>
-                           </div>
-                           <div className="text-center space-y-2">
-                              <Wind size={18} className="mx-auto text-emerald-400" />
-                              <p className="text-[8px] font-black text-gray-500 uppercase">Wind Speed</p>
-                              <p className="text-xs font-black">12km/h</p>
-                           </div>
-                           <div className="text-center space-y-2">
-                              <Thermometer size={18} className="mx-auto text-rose-400" />
-                              <p className="text-[8px] font-black text-gray-500 uppercase">Pressure</p>
-                              <p className="text-xs font-black">1012hp</p>
-                           </div>
-                        </div>
+            {/* Field Monitoring Cards (3D themed) */}
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold px-2">Active Field Monitoring</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {lands.map(land => (
+                  <div key={land.id} className="glass-card overflow-hidden group">
+                    <div className="h-48 bg-[#D8F3DC] relative flex items-center justify-center p-4">
+                      <img src="/hero_farming_3d_1777140631220.png" alt="Field 3D" className="h-40 img-3d group-hover:scale-110 transition-transform" />
+                      <div className="absolute top-4 right-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-[#2D6A4F] border border-[#D8F3DC]">
+                        LIVE SCAN
                       </div>
-
-                      <div className={`mt-8 p-6 rounded-[2rem] border flex items-center space-x-4 ${weather?.alerts?.length > 0 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-emerald-500/5 border-emerald-500/10'}`}>
-                         <AlertTriangle size={20} className={weather?.alerts?.length > 0 ? 'text-amber-500' : 'text-emerald-500'} />
-                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide italic leading-relaxed">
-                           {weather?.alerts?.[0] || "No significant atmospheric anomalies detected. Operations clear."}
-                         </p>
-                      </div>
-                   </div>
-                </div>
-
-                {/* Field Activity */}
-                <div className="xl:col-span-8 space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-black uppercase tracking-tighter flex items-center"><MapPin size={20} className="mr-3 text-emerald-500" /> Quadrant Control</h3>
-                    <button onClick={() => setActiveModule('land')} className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center hover:translate-x-2 transition-transform">Expand Network <ChevronRight size={14} className="ml-2" /></button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {lands.slice(0, 4).map((land, i) => (
-                      <motion.div
-                        key={land.id}
-                        whileHover={{ y: -5 }}
-                        className="glass p-8 rounded-[3rem] border border-white/5 group relative overflow-hidden"
-                      >
-                         <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full group-hover:bg-emerald-500/10 transition-colors" />
-                         <div className="flex items-start justify-between mb-8">
-                            <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-inner border border-white/5">
-                               <Wheat size={24} />
-                            </div>
-                            <div className="text-right">
-                               <p className="text-[8px] font-black text-gray-600 uppercase tracking-[0.25em] mb-1">Status</p>
-                               <span className="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-4 py-1.5 rounded-full border border-emerald-500/20 uppercase tracking-widest">Active Scan</span>
-                            </div>
-                         </div>
-                         <div className="space-y-2">
-                           <h4 className="text-2xl font-black tracking-tighter uppercase leading-none">{land.location}</h4>
-                           <div className="flex items-center space-x-3">
-                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{land.size} Acres</span>
-                              <span className="w-1 h-1 bg-gray-700 rounded-full" />
-                              <span className="text-[10px] font-bold text-emerald-400/60 uppercase tracking-widest">{land.soil_type}</span>
-                           </div>
-                         </div>
-                         <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
-                            <div className="flex -space-x-2">
-                               {[1,2,3].map(j => <div key={j} className="w-6 h-6 rounded-full border-2 border-[#05080a] bg-emerald-500/20" />)}
-                               <div className="w-6 h-6 rounded-full border-2 border-[#05080a] bg-emerald-500 flex items-center justify-center text-[8px] font-black">+2</div>
-                            </div>
-                            <button className="text-[10px] font-black text-white px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors uppercase tracking-widest border border-white/10">Manage Node</button>
-                         </div>
-                      </motion.div>
-                    ))}
-                    {lands.length === 0 && (
-                      <div className="col-span-full glass-dark h-64 rounded-[3rem] border border-dashed border-white/10 flex flex-col items-center justify-center text-center p-12 space-y-4">
-                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-gray-700"><Plus size={32} strokeWidth={1} /></div>
-                        <div className="space-y-1">
-                          <p className="text-gray-500 font-black uppercase tracking-widest">No Active Quadrants Detected</p>
-                          <p className="text-[10px] font-bold text-gray-700 max-w-xs uppercase">Initialize your first field node to begin global synchronization.</p>
-                        </div>
-                        <button onClick={() => setActiveModule('land')} className="bg-emerald-500 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-3xl hover:scale-105 transition-all">Initialize Matrix</button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {activeModule === 'land' && (
-            <motion.div key="land" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-12">
-               <div className="flex items-center justify-between">
-                  <h2 className="text-5xl font-black tracking-tighter uppercase leading-none">Land <span className="text-emerald-500">Matrix</span></h2>
-                  <button className="bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-2xl flex items-center"><Plus size={18} className="mr-2" /> Add Quadrant</button>
-               </div>
-               
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {lands.map(land => (
-                    <div key={land.id} className="glass p-10 rounded-[3.5rem] border border-white/5 space-y-8 group hover:border-emerald-500/20 transition-all">
-                       <div className="flex justify-between items-start">
-                          <div className="w-16 h-16 bg-emerald-500/10 rounded-3xl flex items-center justify-center text-emerald-400 border border-emerald-500/10 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-inner">
-                             <MapPin size={28} />
-                          </div>
-                          <div className="text-right">
-                             <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest mb-1">Area Size</p>
-                             <h5 className="text-2xl font-black text-white tracking-tighter leading-none">{land.size} <span className="text-xs text-gray-600 uppercase">Acres</span></h5>
-                          </div>
-                       </div>
-                       
-                       <div className="space-y-4">
-                          <h4 className="text-3xl font-black uppercase tracking-tighter leading-none">{land.location}</h4>
-                          <div className="grid grid-cols-2 gap-4">
-                             <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                                <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Soil Type</p>
-                                <p className="text-[11px] font-black text-white uppercase tracking-tighter">{land.soil_type}</p>
-                             </div>
-                             <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                                <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Water Source</p>
-                                <p className="text-[11px] font-black text-white uppercase tracking-tighter">{land.water_source || 'Groundwater'}</p>
-                             </div>
-                          </div>
-                       </div>
-
-                       <div className="pt-8 border-t border-white/5 flex items-center justify-between">
-                          <button className="text-[10px] font-black text-white/40 hover:text-white uppercase tracking-widest transition-colors">Edit Config</button>
-                          <button className="bg-white text-black px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all">Analyze</button>
-                       </div>
                     </div>
-                  ))}
-               </div>
-            </motion.div>
-          )}
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h4 className="text-xl font-bold">{land.location}</h4>
+                          <p className="text-sm text-[#52796F]">{land.size} Acres • {land.soil_type}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-[#52796F] uppercase">Soil Health</p>
+                          <p className="text-lg font-bold text-[#40916C]">Optimal</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 border-t border-[#D8F3DC] pt-4">
+                        <FieldMetric icon={<Droplets size={14} />} label="Moisture" value="42%" />
+                        <FieldMetric icon={<Thermometer size={14} />} label="Temp" value="24°C" />
+                        <FieldMetric icon={<Layers size={14} />} label="pH" value="6.5" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {lands.length === 0 && (
+                  <button 
+                    onClick={() => navigate('/farmer/add-land')}
+                    className="glass-card p-12 border-dashed border-2 flex flex-col items-center justify-center text-[#52796F] hover:text-[#2D6A4F] hover:border-[#2D6A4F] transition-all"
+                  >
+                    <div className="w-16 h-16 bg-[#D8F3DC] rounded-full flex items-center justify-center mb-4">
+                      <Plus size={32} />
+                    </div>
+                    <p className="font-bold">Add Your First Land Quadrant</p>
+                    <p className="text-xs">Start AI monitoring for your farm</p>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
 
-          {activeModule === 'recommendation' && <Recommendation />}
-          {activeModule === 'chat' && <Chat />}
-          {activeModule === 'marketplace' && <Marketplace />}
-          {activeModule === 'guidance' && <GrowthProtocol />}
-          {activeModule === 'financials' && <Financials />}
-          {activeModule === 'analytics' && <Analytics />}
-        </AnimatePresence>
-      </main>
+          {/* Right Column */}
+          <div className="lg:col-span-4 space-y-8">
+            
+            {/* Weather Widget */}
+            <div className="glass-card p-8 bg-[#2D6A4F] text-white">
+              <div className="flex justify-between items-start mb-8">
+                <div>
+                  <p className="text-[#B7E4C7] font-bold uppercase tracking-widest text-xs mb-1">Weather Forecast</p>
+                  <h4 className="text-3xl font-bold">{weather?.condition || "Sunny Day"}</h4>
+                  <p className="text-[#D8F3DC]">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+                </div>
+                <CloudSun size={48} className="text-[#D8F3DC]" />
+              </div>
+              
+              <div className="flex items-center gap-6 mb-8">
+                <span className="text-6xl font-bold">{weather?.temp || 32}°</span>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Wind size={16} /> <span>12 km/h</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Droplets size={16} /> <span>42% Humid</span>
+                  </div>
+                </div>
+              </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(16, 185, 129, 0.1);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(16, 185, 129, 0.3);
-        }
-        .glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(40px);
-          -webkit-backdrop-filter: blur(40px);
-        }
-        .glass-dark {
-          background: rgba(0, 0, 0, 0.2);
-          backdrop-filter: blur(40px);
-          -webkit-backdrop-filter: blur(40px);
-        }
-        .shadow-3xl {
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-        }
-      `}} />
-    </div>
+              <div className="p-4 bg-white/10 rounded-2xl border border-white/10 flex items-center gap-4">
+                <AlertTriangle size={20} className="text-[#D8F3DC]" />
+                <p className="text-xs font-medium">Ideal conditions for wheat harvest in the next 48 hours.</p>
+              </div>
+            </div>
+
+            {/* Task Reminders */}
+            <div className="glass-card p-8">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <CalendarIcon size={20} className="text-[#2D6A4F]" /> Task Reminders
+              </h3>
+              <div className="space-y-4">
+                <TaskItem title="Irrigate Sector B" time="Today, 04:00 PM" priority="High" />
+                <TaskItem title="Soil Testing - Sector A" time="Tomorrow" priority="Medium" />
+                <TaskItem title="Apply NPK Fertilizer" time="28 April" priority="Low" />
+              </div>
+              <button className="btn-secondary w-full mt-6 py-3">View Full Calendar</button>
+            </div>
+
+            {/* Market Prices */}
+            <div className="glass-card p-8">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <TrendingUp size={20} className="text-[#2D6A4F]" /> Market Trends
+              </h3>
+              <div className="space-y-4">
+                <MarketItem crop="Rice" price="₹2,450" change="+2.4%" positive={true} />
+                <MarketItem crop="Wheat" price="₹2,100" change="-0.8%" positive={false} />
+                <MarketItem crop="Mustard" price="₹5,800" change="+1.2%" positive={true} />
+              </div>
+            </div>
+
+          </div>
+        </div>
+    </>
   );
 };
+
+const StatCard = ({ title, value, icon, color }) => (
+  <div className="glass-card p-6 flex items-center gap-5">
+    <div className={`w-14 h-14 ${color} rounded-2xl flex items-center justify-center text-2xl shadow-sm`}>
+      {icon}
+    </div>
+    <div>
+      <p className="text-sm font-bold text-[#52796F] uppercase tracking-wider">{title}</p>
+      <h4 className="text-2xl font-bold text-[#1B4332]">{value}</h4>
+    </div>
+  </div>
+);
+
+const CropRecommendationCard = ({ name, suitability, profit, image }) => (
+  <div className="bg-[#F8FAF9] p-6 rounded-[24px] border border-[#D8F3DC] hover:border-[#2D6A4F] transition-all cursor-pointer group">
+    <div className="flex justify-center mb-4">
+      <img src={image} alt={name} className="h-20 img-3d group-hover:scale-110 transition-transform" />
+    </div>
+    <h4 className="text-lg font-bold text-[#1B4332] text-center mb-1">{name}</h4>
+    <div className="flex justify-between items-center text-xs mt-4 pt-4 border-t border-[#D8F3DC]">
+      <div className="text-center">
+        <p className="text-[#52796F] font-bold">Suitability</p>
+        <p className="text-[#2D6A4F] font-bold">{suitability}</p>
+      </div>
+      <div className="text-center">
+        <p className="text-[#52796F] font-bold">Profit</p>
+        <p className="text-[#40916C] font-bold">{profit}</p>
+      </div>
+    </div>
+  </div>
+);
+
+const FieldMetric = ({ icon, label, value }) => (
+  <div className="text-center">
+    <div className="flex items-center justify-center gap-1 text-[#52796F] mb-1">
+      {icon} <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+    </div>
+    <p className="font-bold text-[#1B4332]">{value}</p>
+  </div>
+);
+
+const TaskItem = ({ title, time, priority }) => (
+  <div className="flex items-center justify-between p-4 bg-[#F8FAF9] rounded-2xl border border-[#D8F3DC]">
+    <div>
+      <p className="font-bold text-[#1B4332] text-sm">{title}</p>
+      <p className="text-xs text-[#52796F]">{time}</p>
+    </div>
+    <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase ${
+      priority === 'High' ? 'bg-red-50 text-red-600 border border-red-100' :
+      priority === 'Medium' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+      'bg-blue-50 text-blue-600 border border-blue-100'
+    }`}>
+      {priority}
+    </span>
+  </div>
+);
+
+const MarketItem = ({ crop, price, change, positive }) => (
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 bg-[#F8FAF9] rounded-xl flex items-center justify-center border border-[#D8F3DC]">
+        <Sprout size={18} className="text-[#2D6A4F]" />
+      </div>
+      <p className="font-bold text-[#1B4332]">{crop}</p>
+    </div>
+    <div className="text-right">
+      <p className="font-bold text-[#1B4332]">{price}</p>
+      <p className={`text-xs font-bold ${positive ? 'text-green-600' : 'text-red-600'}`}>{change}</p>
+    </div>
+  </div>
+);
 
 export default LandownerDashboard;

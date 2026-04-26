@@ -22,7 +22,7 @@ export const authService = {
 
 export const landService = {
   getLands: () => api.get('/lands/'),
-  addLand: (data) => api.post('/lands/', data),
+  createLand: (data) => api.post('/lands/', data),
 };
 
 export const cropService = {

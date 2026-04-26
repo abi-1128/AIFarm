@@ -10,14 +10,20 @@ import Register from './pages/Register';
 import Recommendation from './pages/Recommendation';
 import Chat from './pages/Chat';
 import Marketplace from './pages/Marketplace';
+import AddLand from './pages/AddLand';
+
+import LandingPage from './pages/LandingPage';
+
+import Schemes from './pages/Schemes';
+import GrowthProtocol from './pages/GrowthProtocol';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0f0d]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2ECC71]"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAF9]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2D6A4F]"></div>
       </div>
     );
   }
@@ -33,7 +39,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 const DashboardRedirect = () => {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/login" />;
+  if (!user) return <LandingPage />;
   
   switch (user.role) {
     case 'LANDOWNER':
@@ -43,7 +49,7 @@ const DashboardRedirect = () => {
     case 'ADMIN':
       return <Navigate to="/admin" />;
     default:
-      return <Navigate to="/login" />;
+      return <LandingPage />;
   }
 };
 
@@ -52,10 +58,9 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<DashboardRedirect />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
-          <Route path="/" element={<DashboardRedirect />} />
 
           {/* Landowner Routes */}
           <Route element={
@@ -64,10 +69,15 @@ function App() {
             </ProtectedRoute>
           }>
             <Route path="/farmer" element={<LandownerDashboard />} />
+            <Route path="/farmer/add-land" element={<AddLand />} />
             <Route path="/farmer/recommendation" element={<Recommendation />} />
-            <Route path="/farmer/chat" element={<Chat />} />
+            <Route path="/farmer/advisory" element={<GrowthProtocol />} />
             <Route path="/farmer/marketplace" element={<Marketplace />} />
+            <Route path="/farmer/schemes" element={<Schemes />} />
+            <Route path="/farmer/chat" element={<Chat />} />
           </Route>
+
+
 
           {/* Buyer Routes */}
           <Route element={
